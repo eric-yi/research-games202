@@ -21,6 +21,7 @@
             height: 100%;
         }
     </style>
+    <script type="text/javascript" src="https://spectorcdn.babylonjs.com/spector.bundle.js"></script>
     <script src="lib/three.js" defer></script>
     <script src="lib/OrbitControls.js" defer></script>
     <script type="text/javascript" src="lib/MTLLoader.js" defer></script>
@@ -51,6 +52,11 @@
 <body>
     <canvas id="glcanvas"></canvas>
 
+    <script>
+        // Allow querystring to navigate easily in debug in local samples.
+        var spector = new SPECTOR.Spector();
+        spector.displayUI();
+    </script>
 </body>
 
 </html>
