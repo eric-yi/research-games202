@@ -177,6 +177,7 @@ class MeshRender {
 		const gl = this.gl;
 
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.material.frameBuffer);
+		//console.log('=== draw ===');
 		if (this.material.frameBuffer != null) {
 			// Shadow map
 			gl.viewport(0.0, 0.0, resolution, resolution);

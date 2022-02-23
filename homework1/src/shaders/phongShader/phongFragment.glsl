@@ -28,6 +28,9 @@ uniform sampler2D uShadowMap;
 
 varying vec4 vPositionFromLight;
 
+float Bias();
+
+
 highp float rand_1to1(highp float x ) { 
   // -1 -1
   return fract(sin(x)*10000.0);
@@ -105,7 +108,25 @@ float PCSS(sampler2D shadowMap, vec4 coords){
 
 
 float useShadowMap(sampler2D shadowMap, vec4 shadowCoord){
-  return 1.0;
+  //return 1.0;
+  float bias = Bias();
+  vec4 depthpack =texture2D(shadowMap,shadowCoord.xy);
+  float depthUnpack =unpack(depthpack);
+  // 检查当前片段是否在阴影中
+  if(depthUnpack > (shadowCoord.z - bias))
+      return 1.0;
+  return 0.0;
+}
+
+float Bias(){
+ //解决shadow bias 因为shadow map的精度有限，当要渲染的fragment在light space中距Light很远的时候，就会有多个附近的fragement会samper shadow map中同一个texel,但是即使这些fragment在camera view space中的深度值z随xy变化是值变化是很大的，
+  //但他们在light space 中的z值(shadow map中的值)却没变或变化很小，这是因为shadow map分辨率低，采样率低导致精度低，不能准确的记录这些细微的变化
+ 
+  // calculate bias (based on depth map resolution and slope)  vec3 lightDir = normalize(uLightPos);
+  vec3 lightDir = normalize(uLightPos);
+  vec3 normal = normalize(vNormal);
+  float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.005);
+  return  bias;
 }
 
 vec3 blinnPhong() {
@@ -134,12 +155,18 @@ vec3 blinnPhong() {
 void main(void) {
 
   float visibility;
-  //visibility = useShadowMap(uShadowMap, vec4(shadowCoord, 1.0));
+
+  // perform perspective divide 执行透视划分
+  vec3 projCoords = vPositionFromLight.xyz / vPositionFromLight.w;
+  // transform to [0,1] range 变换到[0,1]的范围
+  vec3 shadowCoord = projCoords * 0.5 + 0.5;
+
+  visibility = useShadowMap(uShadowMap, vec4(shadowCoord, 1.0));
   //visibility = PCF(uShadowMap, vec4(shadowCoord, 1.0));
   //visibility = PCSS(uShadowMap, vec4(shadowCoord, 1.0));
 
   vec3 phongColor = blinnPhong();
 
-  //gl_FragColor = vec4(phongColor * visibility, 1.0);
-  gl_FragColor = vec4(phongColor, 1.0);
+  gl_FragColor = vec4(phongColor * visibility, 1.0);
+  //gl_FragColor = vec4(phongColor, 1.0);
 }

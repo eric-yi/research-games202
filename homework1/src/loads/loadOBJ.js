@@ -16,11 +16,13 @@ function loadOBJ(renderer, path, name, objMaterial, transform) {
 	new THREE.MTLLoader(manager)
 		.setPath(path)
 		.load(name + '.mtl', function (materials) {
+			console.log(`=== load ${name + '.mtl'}... ===`)
 			materials.preload();
 			new THREE.OBJLoader(manager)
 				.setMaterials(materials)
 				.setPath(path)
 				.load(name + '.obj', function (object) {
+					console.log(`=== load ${name + '.ojb'}... ===`)
 					object.traverse(function (child) {
 						if (child.isMesh) {
 							let geo = child.geometry;
